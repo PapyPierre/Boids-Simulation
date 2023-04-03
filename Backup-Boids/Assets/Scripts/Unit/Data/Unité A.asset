@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f1061ca6b97b694984093fce602421f, type: 3}
+  m_Name: "Unit\xE9 A"
+  m_EditorClassIdentifier: 
+  unitId: 0
+  unitName: "Unit\xE9 A"
+  maxHealthPoint: 100
+  unitType: 0
+  normalSpeed: 10
+  attackSpeed: 8
+  renforcementSpeed: 10
+  unitPerceptionRadius: 9
+  unitMaxDistFromAnchor: 0
+  anchoringList: []
+  minDistFromOtherUnitInFlock: 0
+  maxDistFromOtherUnitInFlock: 0
+  canAutoEngage: 1
+  engagementDist: 5
+  canDesengage: 0
+  desengagementTriggers: 
+  desengamentDist: 0
+  dammageThreshold: 0
+  desengamentSpeed: 0
+  canProtect: 0
+  protectionUnitList: []
+  targetingPriority:
+  - unitData: {fileID: 0}
+    minDist: 3
+    hpThreshold: 0
+  - unitData: {fileID: 0}
+    minDist: 0
+    hpThreshold: 2
+  targetingSeverity: 1
+  damageRange: {x: 0, y: 0}
+  shootingDistanceRange: {x: 0, y: 0}
+  delayBetweenShots: 0
+  canShootUndergroundUnits: 0
+  isTangible: 0
+  mass: 0

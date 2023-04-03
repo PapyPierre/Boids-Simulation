@@ -7,9 +7,13 @@ public class CameraController : MonoBehaviour
    [SerializeField] private float movementTime;
 
    private Vector3 _newPos;
+   [SerializeField] private Vector3 zoomAmount;
+   private Vector3 _newZoom;
+
    private void Start()
    {
       _newPos = transform.position;
+      _newZoom = transform.localPosition;
    }
 
    private void Update()
@@ -36,6 +40,19 @@ public class CameraController : MonoBehaviour
          _newPos += (transform.right * camSpeed);
       }
 
+      if (Input.GetKey(KeyCode.A))
+      {
+         if (transform.position.y > 10)
+         {
+            _newZoom += zoomAmount;
+         }
+      }
+      if (Input.GetKey(KeyCode.E))
+      {
+         _newZoom -= zoomAmount;
+      }
+
       transform.position = Vector3.Lerp(transform.position, _newPos, Time.deltaTime * movementTime);
+      transform.localPosition = Vector3.Lerp(transform.localPosition, _newZoom, Time.deltaTime * movementTime);
    }
 }

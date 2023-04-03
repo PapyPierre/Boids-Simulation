@@ -41,7 +41,7 @@ MonoBehaviour:
     minDist: 0
     hpThreshold: 2
   targetingSeverity: 1
-  damageRange: {x: 0, y: 0}
+  damageRange: {x: 30, y: 76}
   shootingDistanceRange: {x: 0, y: 0}
   delayBetweenShots: 0
   canShootUndergroundUnits: 0

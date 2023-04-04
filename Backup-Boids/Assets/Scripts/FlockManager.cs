@@ -125,7 +125,7 @@ public class FlockManager : MonoBehaviour
     [Tooltip("Multiplicateur de anchorWeight lorsque l'unité est en dehors des limites de l'ancre"), Foldout("Weights")] 
     public float anchorWeightMultiplicator;
     #endregion
-    
+
     private void Awake() 
     {
         if (instance != null)
@@ -240,7 +240,7 @@ public class FlockManager : MonoBehaviour
     {     
         if (!Application.isPlaying) return;
         Gizmos.color = Color.red;
-        if (currentlySelectedUnit == null || currentlySelectedFlock == null) return;
+        if (currentlySelectedUnit == null || currentlySelectedFlock == null || !GameManager.instance.showMaxDistFromAnchor) return;
         if (allFlocks.Count > 0)
         {
             Gizmos.DrawWireSphere(currentlySelectedFlock.anchor.transform.position, defaultUnitMaxDistFromAnchor);

@@ -827,7 +827,7 @@ MonoBehaviour:
   flockAnchorPrefab: {fileID: 7939560677676546065, guid: ab4f30f96f32dba449ae025343228e8e,
     type: 3}
   useWeights: 1
-  separationWeight: 50
+  separationWeight: 60
   cohesionWeight: 6
   alignmentWeight: 5
   anchorWeight: 7
@@ -1258,11 +1258,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190b65326ac7b484590e7118d09825a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camSpeed: {x: 0, y: 0, z: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
   mouseAboveThisUnit: {fileID: 0}
+  showGizmosOnSelectedUnitOnly: 1
+  showMaxDistFromAnchor: 0
+  showInfluenceOfOthersFlockUnits: 0
+  showUnitsVelocity: 0
+  showUnitsAnchorAttraction: 0
+  showUnitsPerceptionRange: 0
+  showUnitsEngagementRange: 0
+  showUnitdEngagedUnits: 0
 --- !u!4 &1063040417
 Transform:
   m_ObjectHideFlags: 0

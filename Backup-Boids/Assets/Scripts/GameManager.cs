@@ -7,11 +7,22 @@ public class GameManager : MonoBehaviour
    private FlockManager _flockManager;
 
    private Camera _mainCamera;
-   [SerializeField] private Vector3 camSpeed;
    
    [SerializeField] private LayerMask groundLayer;
 
    public Unit.Unit mouseAboveThisUnit;
+
+   #region Debug
+   public bool showGizmosOnSelectedUnitOnly = true;
+   [Space]
+   public bool showMaxDistFromAnchor;
+   public bool showInfluenceOfOthersFlockUnits;
+   public bool showUnitsVelocity;
+   public bool showUnitsAnchorAttraction;
+   public bool showUnitsPerceptionRange;
+   public bool showUnitsEngagementRange;
+   public bool showUnitdEngagedUnits;
+   #endregion
    
    private void Awake()
    {

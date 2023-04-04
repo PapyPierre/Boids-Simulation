@@ -29,7 +29,7 @@ namespace Unit
 
         public bool isReadyToEngage;
         private List<Unit> _unitsInRangeOfEngagement = new ();
-        private Unit _engagedUnit;
+        [SerializeField] private Unit _engagedUnit;
 
         #region private variables for calculus
         private Vector3 _separationForce;
@@ -106,9 +106,16 @@ namespace Unit
                         if (!(distToOtherUnit < _flockManager.defaultUnitPerceptionRadius)) continue;
                     }
 
-                    if (_flockManager.currentlySelectedUnit == this)
+                    if (_gameManager.showInfluenceOfOthersFlockUnits)
                     {
-                        Debug.DrawLine(transform.position, unit.transform.position, Color.magenta);
+                        if (_gameManager.showGizmosOnSelectedUnitOnly)
+                        {
+                            if (_flockManager.currentlySelectedUnit == this)
+                            {
+                                Debug.DrawLine(transform.position, unit.transform.position, Color.magenta);
+                            }
+                        }
+                        else Debug.DrawLine(transform.position, unit.transform.position, Color.magenta);
                     }
                     
                     seperationSum += -(otherUnitPosition - transform.position) * (1f / Mathf.Max(distToOtherUnit, .0001f));
@@ -254,7 +261,28 @@ namespace Unit
 
             if (i >= data.targetingPriority.Count) // Si il reste + que 1 untié après avoir passer touts les priorité de ciblage
             {
-                Debug.LogError("Impossible de départager les cibles pour le ciblage");
+                Unit closestUnit = null;
+                float distToClosestUnit = 0;
+
+                foreach (var unit in unitsTargetable)
+                {
+                    float distToUnit = Vector3.Distance(transform.position, unit.transform.position);
+
+                    if (closestUnit is null)
+                    {
+                        distToClosestUnit = distToUnit;
+                        closestUnit = unit;
+                        continue;
+                    }
+                   
+                    if (distToUnit < distToClosestUnit)
+                    {
+                        distToClosestUnit = distToUnit;
+                        closestUnit = unit;
+                    }
+                }
+
+                _engagedUnit = closestUnit;
                 return;
             }
             
@@ -267,7 +295,7 @@ namespace Unit
                         break;
                     
                     case 2: // L'élèment est une distance min
-
+                        
                         float distToUnit = Vector3.Distance(transform.position, unit.transform.position);
                         
                         if (distToUnit < _dataForTargeting) preSelectedEngagementTarget.Add(unit);
@@ -330,55 +358,78 @@ namespace Unit
         private void OnDrawGizmos()
         {
             if (!Application.isPlaying || !_flockManager) return;
-            if (!_flockManager.currentlySelectedUnit) return;
-            if (_flockManager.currentlySelectedUnit == this)
+            if (_gameManager.showGizmosOnSelectedUnitOnly)
             {
-                // Indique la vélocité de l'unité
-                Gizmos.DrawRay(transform.position, _velocity / 2);
+                if (!_flockManager.currentlySelectedUnit) return;
+                if (_flockManager.currentlySelectedUnit == this) ShowGizmos();
+            }
+            else ShowGizmos();
+        }
+
+        private void ShowGizmos()
+        {
+              // Indique la vélocité de l'unité
+                if (_gameManager.showUnitsVelocity) Gizmos.DrawRay(transform.position, _velocity / 2);
                 
                 // Indique la force d'atraction vers l'ancre
                 Gizmos.color = Color.yellow;
-                Gizmos.DrawRay(transform.position, _returnToAnchorForce * _flockManager.anchorWeight);
+                if (_gameManager.showUnitsAnchorAttraction)
+                {
+                    Gizmos.DrawRay(transform.position, _returnToAnchorForce * _flockManager.anchorWeight);
+                }
                 
                 // Indique la range de perception de l'unité
                 Gizmos.color = Color.green;
-                if (data.unitPerceptionRadius > 0) Gizmos.DrawWireSphere(transform.position, data.unitPerceptionRadius);
-                else Gizmos.DrawWireSphere(transform.position, _flockManager.defaultUnitPerceptionRadius);
-
-                // Indique si l'unité est dans la range de l'ancre ou non (ligne en vert ou en rouge)
-                if (data.unitMaxDistFromAnchor > 0)
+                if (_gameManager.showUnitsPerceptionRange)
                 {
-                    if (Vector3.Distance(transform.position,
-                            myFlock.anchor.transform.position) 
-                        > data.unitMaxDistFromAnchor)
-                    {
-                        Gizmos.color = Color.red;
-                        Gizmos.DrawLine(transform.position, myFlock.anchor.transform.position);
-                    }
-                    else
-                    {
-                        Gizmos.color = Color.green;
-                        Gizmos.DrawLine(transform.position, myFlock.anchor.transform.position);
-                    }
+                    if (data.unitPerceptionRadius > 0) Gizmos.DrawWireSphere(transform.position, data.unitPerceptionRadius);
+                    else Gizmos.DrawWireSphere(transform.position, _flockManager.defaultUnitPerceptionRadius);
                 }
-                else
+
+                // Indique la force d'atraction vers l'ancre (ligne en vert = dans la range de l'ance, rouge = out of bound)
+                if (_gameManager.showUnitsAnchorAttraction)
                 {
-                    if (Vector3.Distance(transform.position, myFlock.anchor.transform.position) 
-                        > _flockManager.defaultUnitMaxDistFromAnchor)
+                    if (data.unitMaxDistFromAnchor > 0)
                     {
-                        Gizmos.color = Color.red;
-                        Gizmos.DrawLine(transform.position, myFlock.anchor.transform.position);
+                        if (Vector3.Distance(transform.position,
+                                myFlock.anchor.transform.position) 
+                            > data.unitMaxDistFromAnchor)
+                        {
+                            Gizmos.color = Color.red;
+                            Gizmos.DrawRay(transform.position, _returnToAnchorForce * _flockManager.anchorWeight);
+                        }
+                        else
+                        {
+                            Gizmos.color = Color.green;
+                            Gizmos.DrawRay(transform.position, _returnToAnchorForce * _flockManager.anchorWeight);
+                        }
                     }
                     else
                     {
-                        Gizmos.color = Color.green;
-                        Gizmos.DrawLine(transform.position, myFlock.anchor.transform.position);
+                        if (Vector3.Distance(transform.position, myFlock.anchor.transform.position) 
+                            > _flockManager.defaultUnitMaxDistFromAnchor)
+                        {
+                            Gizmos.color = Color.red;
+                            Gizmos.DrawRay(transform.position, _returnToAnchorForce * _flockManager.anchorWeight);
+                        }
+                        else
+                        {
+                            Gizmos.color = Color.green;
+                            Gizmos.DrawRay(transform.position, _returnToAnchorForce * _flockManager.anchorWeight);
+                        }
                     }
                 }
                 
                 // Indique la proté d'engagement de l'unité
                 Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(transform.position, data.engagementDist); }
+                if (_gameManager.showUnitsEngagementRange) Gizmos.DrawWireSphere(transform.position, data.engagementDist);
+
+                // Indique l'unité ciblé par cette unité
+                if (_engagedUnit != null && _gameManager.showUnitdEngagedUnits)
+                {
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawLine(transform.position,_engagedUnit.transform.position);
+                }
         }
     }
 }

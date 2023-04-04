@@ -700,7 +700,7 @@ MonoBehaviour:
     flockColor: {r: 0, g: 0, b: 0, a: 0}
     unitsInFlocks: []
   flocksStateUpdateTime: 1
-  unitCountInNewFlock: 10
+  unitCountInNewFlock: 300
   newFlockType: 0
   newFlockFaction: 0
   defaultUnitPerceptionRadius: 3
@@ -829,8 +829,8 @@ MonoBehaviour:
   useWeights: 1
   separationWeight: 60
   cohesionWeight: 6
-  alignmentWeight: 5
-  anchorWeight: 7
+  alignmentWeight: 8
+  anchorWeight: 6
   anchorWeightMultiplicator: 3
 --- !u!4 &473821464
 Transform:

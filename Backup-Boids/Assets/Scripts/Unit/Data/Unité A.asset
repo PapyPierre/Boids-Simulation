@@ -19,7 +19,7 @@ MonoBehaviour:
   normalSpeed: 10
   attackSpeed: 8
   renforcementSpeed: 10
-  unitPerceptionRadius: 9
+  unitPerceptionRadius: 7
   unitMaxDistFromAnchor: 0
   anchoringList: []
   minDistFromOtherUnitInFlock: 0

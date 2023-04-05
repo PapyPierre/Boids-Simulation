@@ -4,12 +4,12 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
    [SerializeField] private float camSpeed;
-   [SerializeField] private float movementTime;
+   [SerializeField] private float antiInertia;
 
    private Vector3 _newPos;
    [SerializeField] private Vector3 zoomAmount;
    private Vector3 _newZoom;
-
+   
    private void Start()
    {
       _newPos = transform.position;
@@ -49,10 +49,13 @@ public class CameraController : MonoBehaviour
       }
       if (Input.GetKey(KeyCode.E))
       {
-         _newZoom -= zoomAmount;
+         if (transform.position.y < 50)
+         {
+            _newZoom -= zoomAmount;
+         }
       }
 
-      transform.position = Vector3.Lerp(transform.position, _newPos, Time.deltaTime * movementTime);
-      transform.localPosition = Vector3.Lerp(transform.localPosition, _newZoom, Time.deltaTime * movementTime);
+      transform.position = Vector3.Lerp(transform.position, _newPos, Time.deltaTime * antiInertia);
+      transform.localPosition = Vector3.Lerp(transform.localPosition, _newZoom, Time.deltaTime * antiInertia);
    }
 }

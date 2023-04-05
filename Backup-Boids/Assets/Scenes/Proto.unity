@@ -507,9 +507,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d98bc34f2d645c64d9109f9fba25cedb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camSpeed: 3
-  movementTime: 1
-  zoomAmount: {x: 1, y: -1, z: 0}
+  camSpeed: 2
+  antiInertia: 3
+  zoomAmount: {x: 0.8, y: -0.8, z: 0}
 --- !u!1001 &388400107
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2132,7 +2132,6 @@ GameObject:
   - component: {fileID: 1936172608}
   - component: {fileID: 1936172607}
   - component: {fileID: 1936172606}
-  - component: {fileID: 1936172610}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -2224,28 +2223,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1936172610
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1936172605}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b128b70b8ca4c542a90d7a550e1e025, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mouseAboveThisUnit: {fileID: 0}
-  currentlySelectedUnits: []
-  currentlySelectedFlock:
-    faction: 0
-    anchor: {fileID: 0}
-    flockColor: {r: 0, g: 0, b: 0, a: 0}
-    unitsInFlocks: []
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!1001 &1956105612
 PrefabInstance:
   m_ObjectHideFlags: 0

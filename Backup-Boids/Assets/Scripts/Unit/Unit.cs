@@ -128,10 +128,10 @@ namespace Unit
                         {
                             if (_selectionManager.currentlySelectedUnits.Contains(this))
                             {
-                                Debug.DrawLine(transform.position, unit.transform.position, Color.magenta);
+                                Debug.DrawLine(transform.position, unit.transform.position, myFlock.flockColor);
                             }
                         }
-                        else Debug.DrawLine(transform.position, unit.transform.position, Color.magenta);
+                        else Debug.DrawLine(transform.position, unit.transform.position, myFlock.flockColor);
                     }
                     
                     seperationSum += -(otherUnitPosition - transform.position) * (1f / Mathf.Max(distToOtherUnit, .0001f));
@@ -337,13 +337,13 @@ namespace Unit
                         throw new ArgumentException();
                 }
             }
-
-            if (preSelectedEngagementTarget.Count > 1)
+            
+            if (preSelectedEngagementTarget.Count == 1) engagedUnit = preSelectedEngagementTarget[0];
+            else
             {
                 _indexOfCurrentTargetingPriority++;
                 DetermineTarget();   
             }
-            else engagedUnit = preSelectedEngagementTarget[0];
         }
 
         private int SelectTargetingPrioWithGivenIndex(int index)

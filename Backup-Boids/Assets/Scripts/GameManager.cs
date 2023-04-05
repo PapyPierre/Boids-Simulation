@@ -1,8 +1,10 @@
+using System;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
    public static GameManager instance;
+   private FlockManager _flockManager;
    
    #region Debug
    public bool showGizmosOnSelectedUnitOnly = true;
@@ -25,5 +27,22 @@ public class GameManager : MonoBehaviour
       else instance = this;
       
       Application.targetFrameRate = 60;
+   }
+
+   private void Start()
+   {
+      _flockManager = FlockManager.instance;
+   }
+
+   private void Update()
+   {
+      if (Input.GetKeyDown(KeyCode.F2))
+      {
+         foreach (var unit in _flockManager.allUnits) unit.gameObject.SetActive(false);
+         foreach (var flock in  _flockManager.allFlocks) flock.anchor.gameObject.SetActive(false);
+         
+         _flockManager.allUnits.Clear();
+         _flockManager.allFlocks.Clear();
+      }
    }
 }

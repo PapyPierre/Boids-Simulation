@@ -95,16 +95,18 @@ public class FlockManager : MonoBehaviour
 
     [SerializeField] private bool showAllFlocksAndUnitsInInspector; // Used only for inspector purpose
     
-    [ShowIf("showAllFlocksAndUnitsInInspector")] public List<Flock> allFlocks;
-    [ShowIf("showAllFlocksAndUnitsInInspector")] public List<Unit.Unit> allUnits;
+    [ShowIf("showAllFlocksAndUnitsInInspector"), ReadOnly] public List<Flock> allFlocks;
+    [ShowIf("showAllFlocksAndUnitsInInspector"), ReadOnly] public List<Unit.Unit> allUnits;
     #endregion
 
-    
+    #region Required GameObjects
+
     [Foldout("Required GameObjects"), Required()] public Transform blueBase;
     [Foldout("Required GameObjects"), Required()] public Transform redBase;
-    [ Foldout("Required GameObjects"), Required()] public Transform greenBase;
+    [Foldout("Required GameObjects"), Required()] public Transform greenBase;
 
     [SerializeField, Foldout("Required GameObjects"), Required(), Space] private GameObject flockAnchorPrefab;
+    #endregion
     
     #region Weights
     

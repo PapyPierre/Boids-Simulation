@@ -9,14 +9,8 @@ using Random = UnityEngine.Random;
 public class FlockManager : MonoBehaviour 
 {
     public static FlockManager instance;
-
-    #region Current Selection Infos
+    private SelectionManager _selectionManager;
     
-    [Foldout("Current Selection Infos")]
-    public Unit.Unit currentlySelectedUnit;
-    [ReadOnly, SerializeField,  Foldout("Current Selection Infos")] public Flock currentlySelectedFlock;
-    #endregion
-
     #region Flocks informations
     
     [SerializeField, Tooltip("Temps en secondes entre chaque mise à jour d'états des flocks," +
@@ -104,12 +98,13 @@ public class FlockManager : MonoBehaviour
     [ShowIf("showAllFlocksAndUnitsInInspector")] public List<Flock> allFlocks;
     [ShowIf("showAllFlocksAndUnitsInInspector")] public List<Unit.Unit> allUnits;
     #endregion
-    
-    #region Prefabs
 
-    [SerializeField, Foldout("Prefabs")] private GameObject[] unitPrefabs;
-    [SerializeField, Foldout("Prefabs"), Required()] private GameObject flockAnchorPrefab;
-    #endregion
+    
+    [Foldout("Required GameObjects"), Required()] public Transform blueBase;
+    [Foldout("Required GameObjects"), Required()] public Transform redBase;
+    [ Foldout("Required GameObjects"), Required()] public Transform greenBase;
+
+    [SerializeField, Foldout("Required GameObjects"), Required(), Space] private GameObject flockAnchorPrefab;
     
     #region Weights
     
@@ -122,8 +117,10 @@ public class FlockManager : MonoBehaviour
     public float alignmentWeight;
     [Tooltip("Force pour rester proche de l'ancre de sa flock"), Foldout("Weights")] 
     public float anchorWeight;
-    [Tooltip("Multiplicateur de anchorWeight lorsque l'unité est en dehors des limites de l'ancre"), Foldout("Weights")] 
-    public float anchorWeightMultiplicator;
+    [Tooltip("Multiplicateur de anchorWeight lorsque l'unité est en dehors des limites de l'ancre"), 
+     Foldout("Weights"), Range(0,10)] public float anchorWeightMultiplicator;
+    [Tooltip("Force pour retourner à la base de sa faction"), Foldout("Weights")] 
+    public float baseWeight;
     #endregion
 
     private void Awake() 
@@ -138,6 +135,11 @@ public class FlockManager : MonoBehaviour
         allFlocks.Clear();
     }
 
+    private void Start()
+    {
+        _selectionManager = SelectionManager.instance;
+    }
+
     [Button()]
     public void InstantiateNewFlock()
     {
@@ -149,8 +151,16 @@ public class FlockManager : MonoBehaviour
         
         Flock newFlock = new Flock();
         newFlock.faction = newFlockFaction;
+
+        Vector3 newAnchorPos = newFlockFaction switch
+        {
+            FlockFaction.BlueFaction => new Vector3(blueBase.position.x, 20, blueBase.position.z),
+            FlockFaction.RedFaction => new Vector3(redBase.position.x, 20, redBase.position.z),
+            FlockFaction.GreenFaction => new Vector3(greenBase.position.x, 20, greenBase.position.z),
+            _ => throw new ArgumentOutOfRangeException()
+        };
         
-        GameObject anchor = Instantiate(flockAnchorPrefab, new Vector3(0, 20, 0), Quaternion.identity);
+        GameObject anchor = Instantiate(flockAnchorPrefab, newAnchorPos, Quaternion.identity);
 
         newFlock.anchor = anchor.GetComponent<FlockAnchor>();
         newFlock.CurrentState = FlockState.Stationnaire;
@@ -180,10 +190,9 @@ public class FlockManager : MonoBehaviour
         {
             for (int i = 0; i < unitCountInNewFlock; i++)
             {
-                Vector3 pos = new Vector3(Random.Range(-defaultUnitMaxDistFromAnchor, defaultUnitMaxDistFromAnchor),
-                    1, Random.Range(-defaultUnitMaxDistFromAnchor, defaultUnitMaxDistFromAnchor));
-                
-                SetUpUnit(pos, defaultTerrestUnit, newFlock);
+                Vector3 pos = PedroHelpers.GenerateRandomPosInCube(newFlock.anchor.transform.position, defaultUnitMaxDistFromAnchor);
+                Vector3 correctedPos = new Vector3(pos.x, 1, pos.z);
+                SetUpUnit(correctedPos, defaultTerrestUnit, newFlock);
             }
         }
         
@@ -196,6 +205,13 @@ public class FlockManager : MonoBehaviour
         GameObject newUnitGO = Instantiate(unitPrefab, spawnPos, rot);
         Unit.Unit newUnit = newUnitGO.GetComponent<Unit.Unit>();
         newUnit.myFlock = newFlock;
+        newUnit.myBase = newFlock.faction switch
+        {
+            FlockFaction.BlueFaction => blueBase,
+            FlockFaction.RedFaction => redBase,
+            FlockFaction.GreenFaction => greenBase,
+            _ => throw new ArgumentOutOfRangeException(nameof(newFlock.faction))
+        };
         allUnits.Add(newUnit);
         newFlock.unitsInFlocks.Add(newUnit);
     }
@@ -236,14 +252,41 @@ public class FlockManager : MonoBehaviour
         StartCoroutine(UpdateFlocksStates());
     }
     
+    public void MergeFlocks(FlockManager.Flock flockToMerge, FlockManager.Flock targetFlock)
+    {
+        foreach (var unit in targetFlock.unitsInFlocks)
+        {
+            unit.selectionCircle.SetActive(true);
+        }
+      
+        foreach (var unit in flockToMerge.unitsInFlocks)
+        {
+            unit.myFlock = targetFlock;
+            targetFlock.unitsInFlocks.Add(unit);
+        }
+      
+        flockToMerge.anchor.gameObject.SetActive(false);
+        allFlocks.Remove(flockToMerge);
+      
+       _selectionManager.currentlySelectedFlock = targetFlock;
+    }
+
+    
     private void OnDrawGizmos() 
     {     
         if (!Application.isPlaying) return;
         Gizmos.color = Color.red;
-        if (currentlySelectedUnit == null || currentlySelectedFlock == null || !GameManager.instance.showMaxDistFromAnchor) return;
+        if ( _selectionManager.currentlySelectedUnits == null ||  _selectionManager.currentlySelectedFlock == null ||
+             !GameManager.instance.showMaxDistFromAnchor) return;
         if (allFlocks.Count > 0)
         {
-            Gizmos.DrawWireSphere(currentlySelectedFlock.anchor.transform.position, defaultUnitMaxDistFromAnchor);
+            if ( _selectionManager.currentlySelectedFlock.unitsInFlocks[0].data.unitMaxDistFromAnchor > 0)
+            {
+                Gizmos.DrawWireSphere( _selectionManager.currentlySelectedFlock.anchor.transform.position, 
+                    _selectionManager.currentlySelectedFlock.unitsInFlocks[0].data.unitMaxDistFromAnchor);
+            }
+            else Gizmos.DrawWireSphere( _selectionManager.currentlySelectedFlock.anchor.transform.position, 
+                defaultUnitMaxDistFromAnchor);
         }
     }
 }

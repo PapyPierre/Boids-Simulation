@@ -143,6 +143,7 @@ GameObject:
   - component: {fileID: 7780722065937327485}
   - component: {fileID: 3504138952852548479}
   - component: {fileID: 709467528}
+  - component: {fileID: 8089621407709548354}
   m_Layer: 6
   m_Name: Unit A
   m_TagString: Untagged
@@ -192,8 +193,10 @@ MonoBehaviour:
   selectionCircle: {fileID: 3644933374217483140}
   animator: {fileID: 0}
   isOutOfBoundOfAnchor: 0
+  isInIdle: 0
   currentSpeed: 0
   isReadyToEngage: 0
+  engagedUnit: {fileID: 0}
 --- !u!65 &3504138952852548479
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -315,6 +318,19 @@ TrailRenderer:
   m_MinVertexDistance: 0.1
   m_Autodestruct: 0
   m_Emitting: 1
+--- !u!135 &8089621407709548354
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6229230888320228767}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 2
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &3003798440162258232
 PrefabInstance:
   m_ObjectHideFlags: 0

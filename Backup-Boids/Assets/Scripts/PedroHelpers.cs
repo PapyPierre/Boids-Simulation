@@ -18,7 +18,7 @@ public static class PedroHelpers
     #endregion
 
     #region Random 2D Position
-    public static Vector2 GenerateRandomPosInA2Drea(Vector2 area)
+    public static Vector2 GenerateRandomPosIn2DArea(Vector2 area)
     {
         return new Vector2(
             Random.Range(-area.x,area.x), 

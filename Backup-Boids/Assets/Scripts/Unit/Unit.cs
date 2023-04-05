@@ -9,19 +9,22 @@ namespace Unit
     {
         private GameManager _gameManager;
         private FlockManager _flockManager;
-        
+        private SelectionManager _selectionManager;
+
+        #region public and serialised variables
         [Expandable] public UnitData data;
 
         [ReadOnly] public FlockManager.Flock myFlock;
+        public Transform myBase;
         public float currentHealthPoint;
-        
+
         [SerializeField] private GameObject prefabBlue; 
         [SerializeField] private GameObject prefabRed;
         [SerializeField] private GameObject prefabGreen;
         public GameObject selectionCircle;
         
         [SerializeField] private Animator animator;
-        private bool _isanimatorNotNull;
+        private bool _isAnimatorNotNull;
 
         public bool isOutOfBoundOfAnchor;
         public bool isInIdle;
@@ -29,12 +32,17 @@ namespace Unit
 
         public bool isReadyToEngage;
         private List<Unit> _unitsInRangeOfEngagement = new ();
-        [SerializeField] private Unit _engagedUnit;
+        [SerializeField] private Unit engagedUnit;
 
+        private bool _isDesengaged;
+        #endregion
+        
         #region private variables for calculus
         private Vector3 _separationForce;
         private Vector3 _cohesionForce;
         private Vector3 _alignmentForce;
+        
+        private float _distToMyAnchor;
 
         private Vector3 _returnToAnchorForce;
         private Vector3 _velocity;
@@ -43,7 +51,7 @@ namespace Unit
 
         private void Awake()
         {
-            _isanimatorNotNull = animator != null;
+          
             currentHealthPoint = data.maxHealthPoint;
             if (data.canAutoEngage) isReadyToEngage = true;
         } 
@@ -52,23 +60,30 @@ namespace Unit
         {
             _gameManager = GameManager.instance;
             _flockManager = FlockManager.instance;
+            _selectionManager = SelectionManager.instance;
 
             currentSpeed = data.normalSpeed;
 
             switch (myFlock.faction)
             {
-                case FlockManager.FlockFaction.BlueFaction:
-                    prefabBlue.SetActive(true);
+                case FlockManager.FlockFaction.BlueFaction: prefabBlue.SetActive(true);
                     break;
-                case FlockManager.FlockFaction.RedFaction:
-                    prefabRed.SetActive(true);
+                case FlockManager.FlockFaction.RedFaction: prefabRed.SetActive(true);
                     break;
-                case FlockManager.FlockFaction.GreenFaction:
-                    prefabGreen.SetActive(true);
+                case FlockManager.FlockFaction.GreenFaction: prefabGreen.SetActive(true);
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: throw new ArgumentOutOfRangeException();
             }
+            
+            animator = myFlock.faction switch
+            {
+                FlockManager.FlockFaction.BlueFaction => prefabBlue.GetComponent<Animator>(),
+                FlockManager.FlockFaction.RedFaction => prefabRed.GetComponent<Animator>(),
+                FlockManager.FlockFaction.GreenFaction => prefabGreen.GetComponent<Animator>(),
+                _ => null
+            };
+
+            _isAnimatorNotNull = animator != null;
         }
 
         private void Update() 
@@ -76,6 +91,7 @@ namespace Unit
             CalculateForces();
             MoveForward();
             ManageEngagement();
+            ManageDesengagement();
         }
 
         #region Movement Behaviour
@@ -110,7 +126,7 @@ namespace Unit
                     {
                         if (_gameManager.showGizmosOnSelectedUnitOnly)
                         {
-                            if (_flockManager.currentlySelectedUnit == this)
+                            if (_selectionManager.currentlySelectedUnits.Contains(this))
                             {
                                 Debug.DrawLine(transform.position, unit.transform.position, Color.magenta);
                             }
@@ -155,66 +171,79 @@ namespace Unit
             var dir = myFlock.anchor.transform.position - transform.position;
             _returnToAnchorForce = dir.normalized;
             
-            // If too far from anchor, apply multiplicator to go back to the anchor
-            float distToAnchor;
-
-            if (data.unitType is UnitData.UnitType.Aérienne)
+            switch (data.unitType)
             {
-                distToAnchor = Vector3.Distance(transform.position, myFlock.anchor.transform.position);
-            }
-            else if (data.unitType is UnitData.UnitType.Terrestre)
-            {
-                Vector3 anchorPosOnGround = new Vector3(myFlock.anchor.transform.position.x, 1,
-                    myFlock.anchor.transform.position.z);
+                case UnitData.UnitType.Aérienne:
+                    _distToMyAnchor = Vector3.Distance(transform.position, myFlock.anchor.transform.position);
+                    break;
                 
-                distToAnchor = Vector3.Distance(transform.position, anchorPosOnGround);
+                case UnitData.UnitType.Terrestre:
+                    var anchorPos = myFlock.anchor.transform.position;
+                    Vector3 anchorPosOnGround = new Vector3(anchorPos.x, 1, anchorPos.z);
+                
+                    _distToMyAnchor = Vector3.Distance(transform.position, anchorPosOnGround);
+                    break;
+                
+                default:
+                    _distToMyAnchor = Vector3.Distance(transform.position, myFlock.anchor.transform.position);
+                    break;
             }
-            else // Default, shoudn't be used
-            {
-                distToAnchor = Vector3.Distance(transform.position, myFlock.anchor.transform.position);
-            }
-            
-            if (distToAnchor > maxDistFromAnchor)
-            {
-                isOutOfBoundOfAnchor = true;
-                _returnToAnchorForce *= _flockManager.anchorWeightMultiplicator;
-            }
-            else isOutOfBoundOfAnchor = false;
+
+            _returnToAnchorForce *= (_distToMyAnchor / (10 -_flockManager.anchorWeightMultiplicator)) + 1;
+            isOutOfBoundOfAnchor = _distToMyAnchor > maxDistFromAnchor;
         }
         
         private void MoveForward()
         {
             if (isInIdle)
             {
-                if (_isanimatorNotNull) animator.SetBool("isMoving", false);
+                if (_isAnimatorNotNull) animator.SetBool("isMoving", false);
                 return;
             }
-            
-            _force = _flockManager.useWeights switch
+
+            if (_isDesengaged)
             {
-                true => _separationForce * _flockManager.separationWeight + _cohesionForce * _flockManager.cohesionWeight +
-                        _alignmentForce * _flockManager.alignmentWeight + _returnToAnchorForce * _flockManager.anchorWeight,
-                false => _separationForce + _cohesionForce + _alignmentForce + _returnToAnchorForce
-            };
-
-            var correctedForce = _force;
-            if (data.unitType is UnitData.UnitType.Terrestre) correctedForce = new Vector3(_force.x, 0, _force.z);
-
-            if (isOutOfBoundOfAnchor)
-            { 
-                _velocity = transform.forward * data.renforcementSpeed + correctedForce * Time.deltaTime;
-                _velocity = _velocity.normalized * data.renforcementSpeed;
-                if (_isanimatorNotNull) animator.SetBool("isMoving", true);
+                var dir = myBase.position - transform.position;
+                Vector3 returnToBaseForce = dir.normalized;
+                
+                _force = _separationForce * _flockManager.separationWeight + _cohesionForce *
+                         _flockManager.cohesionWeight + _alignmentForce * _flockManager.alignmentWeight + 
+                         returnToBaseForce * _flockManager.baseWeight;
             }
             else
             {
+                _force = _flockManager.useWeights switch
                 {
-                    _velocity = transform.forward * currentSpeed + correctedForce * Time.deltaTime;
-                    _velocity = _velocity.normalized * currentSpeed;
-                    if (_isanimatorNotNull) animator.SetBool("isMoving", true);
-                }
+                    true => _separationForce * _flockManager.separationWeight + _cohesionForce * _flockManager.cohesionWeight +
+                            _alignmentForce * _flockManager.alignmentWeight + _returnToAnchorForce * _flockManager.anchorWeight,
+                    false => _separationForce + _cohesionForce + _alignmentForce + _returnToAnchorForce
+                };
             }
             
+            var correctedForce = _force;
+            if (data.unitType is UnitData.UnitType.Terrestre) correctedForce = new Vector3(_force.x, 0, _force.z);
+
+            if (_isDesengaged)
+            {
+                var speed = data.desengamentSpeed switch
+                {
+                    UnitData.PossibleDesengamentSpeed.NormalSpeed => data.normalSpeed,
+                    UnitData.PossibleDesengamentSpeed.AttackSpeed => data.attackSpeed,
+                    UnitData.PossibleDesengamentSpeed.RenforcementSpeed => data.renforcementSpeed,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                ApplyVelocity(speed, correctedForce);
+            }
+            else if (isOutOfBoundOfAnchor) ApplyVelocity(data.renforcementSpeed, correctedForce);
+            else ApplyVelocity(currentSpeed, correctedForce);
+        }
+
+        private void ApplyVelocity(float speed, Vector3 force)
+        {
+            _velocity = transform.forward * speed + force * Time.deltaTime; 
+            _velocity = _velocity.normalized * speed;
+            if (_isAnimatorNotNull) animator.SetBool("isMoving", true);
             transform.position += _velocity * Time.deltaTime;
             transform.rotation = Quaternion.LookRotation(_velocity);
         }
@@ -225,13 +254,14 @@ namespace Unit
         List<Unit> preSelectedEngagementTarget = new();
         private int _dataForTargeting;
 
+        #region Engagement
         private void ManageEngagement()
         {
-            if (_unitsInRangeOfEngagement.Count is 0 || !isReadyToEngage || _engagedUnit is not null) return;
+            if (_unitsInRangeOfEngagement.Count is 0 || !isReadyToEngage || engagedUnit is not null || _isDesengaged) return;
 
             if (_unitsInRangeOfEngagement.Count is 1)
             {
-                _engagedUnit = _unitsInRangeOfEngagement[0];
+                engagedUnit = _unitsInRangeOfEngagement[0];
                 return;
             }
 
@@ -239,17 +269,15 @@ namespace Unit
             {
                 DetermineTarget(); // Parmis celle à porté
                 dertermineNewTarget = false;
-                
             }
         }
 
         private bool dertermineNewTarget = true;
 
         private int _indexOfCurrentTargetingPriority;
-
         private void DetermineTarget()
         {
-            if (_engagedUnit is not null) return; // Si une unité est déja engagé, return
+            if (engagedUnit is not null) return; // Si une unité est déja engagé, return
                 
             if (preSelectedEngagementTarget.Count is 0) LookForTargetInGivenList(_unitsInRangeOfEngagement, _indexOfCurrentTargetingPriority);
             else LookForTargetInGivenList(preSelectedEngagementTarget, _indexOfCurrentTargetingPriority);
@@ -282,7 +310,7 @@ namespace Unit
                     }
                 }
 
-                _engagedUnit = closestUnit;
+                engagedUnit = closestUnit;
                 return;
             }
             
@@ -315,7 +343,7 @@ namespace Unit
                 _indexOfCurrentTargetingPriority++;
                 DetermineTarget();   
             }
-            else _engagedUnit = preSelectedEngagementTarget[0];
+            else engagedUnit = preSelectedEngagementTarget[0];
         }
 
         private int SelectTargetingPrioWithGivenIndex(int index)
@@ -337,22 +365,47 @@ namespace Unit
             }
             else return 0;
         }
-        
+        #endregion
+
+        #region Desengagement
+
+        private void ManageDesengagement()
+        {
+            if (!data.canDesengage || data.desengagementTriggers.Count is 0 || _isDesengaged) return;
+
+            foreach (var desengagementTrigger in data.desengagementTriggers)
+            {
+                if (desengagementTrigger == UnitData.DesengagementTrigger.ByDistance)
+                {
+                    if (_distToMyAnchor > data.desengamentDist) Desengage();
+                }
+                else if (desengagementTrigger == UnitData.DesengagementTrigger.ByHealthPoint)
+                {
+                    if (currentHealthPoint < data.dammageThreshold) Desengage();
+                }
+            }
+        }
+
+        private void Desengage()
+        {
+            engagedUnit = null;
+            _isDesengaged = true;
+        }
+        #endregion
         #endregion
 
         #region Selection
         private void OnMouseEnter()
         {
-            _gameManager.mouseAboveThisUnit = this;
+            _selectionManager.mouseAboveThisUnit = this;
             selectionCircle.SetActive(true);
         }
 
         private void OnMouseExit()
         { 
-            _gameManager.mouseAboveThisUnit = null;
-            if (_flockManager.currentlySelectedFlock != myFlock) selectionCircle.SetActive(false);
-        } 
-        
+            _selectionManager.mouseAboveThisUnit = null;
+            if (_selectionManager.currentlySelectedFlock != myFlock) selectionCircle.SetActive(false);
+        }
         #endregion
 
         private void OnDrawGizmos()
@@ -360,8 +413,8 @@ namespace Unit
             if (!Application.isPlaying || !_flockManager) return;
             if (_gameManager.showGizmosOnSelectedUnitOnly)
             {
-                if (!_flockManager.currentlySelectedUnit) return;
-                if (_flockManager.currentlySelectedUnit == this) ShowGizmos();
+                if (_selectionManager.currentlySelectedUnits.Count is 0) return;
+                if (_selectionManager.currentlySelectedUnits.Contains(this)) ShowGizmos();
             }
             else ShowGizmos();
         }
@@ -425,10 +478,10 @@ namespace Unit
                 if (_gameManager.showUnitsEngagementRange) Gizmos.DrawWireSphere(transform.position, data.engagementDist);
 
                 // Indique l'unité ciblé par cette unité
-                if (_engagedUnit != null && _gameManager.showUnitdEngagedUnits)
+                if (engagedUnit != null && _gameManager.showUnitdEngagedUnits)
                 {
                     Gizmos.color = Color.red;
-                    Gizmos.DrawLine(transform.position,_engagedUnit.transform.position);
+                    Gizmos.DrawLine(transform.position,engagedUnit.transform.position);
                 }
         }
     }

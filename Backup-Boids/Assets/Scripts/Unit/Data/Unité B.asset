@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: "Unit\xE9 B"
   m_EditorClassIdentifier: 
   unitId: 0
-  unitName: "Unit\xE9 B"
   maxHealthPoint: 100
   unitType: 1
   normalSpeed: 8
@@ -22,8 +21,6 @@ MonoBehaviour:
   unitPerceptionRadius: 0
   unitMaxDistFromAnchor: 0
   anchoringList: []
-  minDistFromOtherUnitInFlock: 0
-  maxDistFromOtherUnitInFlock: 0
   canAutoEngage: 1
   engagementDist: 5
   canDesengage: 0
@@ -33,17 +30,13 @@ MonoBehaviour:
   desengamentSpeed: 0
   canProtect: 0
   protectionUnitList: []
-  targetingPriority: []
-  targetingSeverity: 0
-  damageRange: {x: 0, y: 0}
-  shootingDistanceRange: {x: 0, y: 0}
-  delayBetweenShots: 0
-  canShootUndergroundUnits: 0
-  isTangible: 0
-  mass: 0
-  prefabBlue: {fileID: 2836004475591695743, guid: f432554f564e69242897607d34218939,
-    type: 3}
-  prefabRed: {fileID: 6757030203080338856, guid: 5dff3b251d4591041bc4876671a95d68,
-    type: 3}
-  prefabGreen: {fileID: 6757030203080338856, guid: 8a92b52cce3d49c4eabd964e4e7b43a6,
-    type: 3}
+  targetingPriority:
+  - unitData: {fileID: 0}
+    minDist: 0
+    hpThreshold: 50
+  - unitData: {fileID: 0}
+    minDist: 5
+    hpThreshold: 0
+  damageRange: {x: 15, y: 25}
+  shootingDistanceRange: {x: 0, y: 20}
+  delayBetweenShots: 1

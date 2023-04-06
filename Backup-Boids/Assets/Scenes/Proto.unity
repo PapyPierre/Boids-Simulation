@@ -727,9 +727,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4713001e35fc3e74fb86bce6aec82919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flocksStateUpdateTime: 1
-  unitCountInNewFlock: 500
-  newFlockType: 0
+  flocksStateUpdateTime: 0.5
+  unitCountInNewFlock: 20
+  newFlockType: 1
   newFlockFaction: 0
   defaultUnitPerceptionRadius: 3
   defaultUnitMaxDistFromAnchor: 12
@@ -756,7 +756,7 @@ MonoBehaviour:
   alignmentWeight: 14
   anchorWeight: 6
   anchorWeightMultiplicator: 3
-  baseWeight: 0
+  baseWeight: 6
 --- !u!4 &473821464
 Transform:
   m_ObjectHideFlags: 0
@@ -1394,7 +1394,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190b65326ac7b484590e7118d09825a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showGizmosOnSelectedUnitOnly: 1
+  showGizmosOnSelectedUnitOnly: 0
   showMaxDistFromAnchor: 0
   showInfluenceOfOthersFlockUnits: 0
   showUnitsVelocity: 0

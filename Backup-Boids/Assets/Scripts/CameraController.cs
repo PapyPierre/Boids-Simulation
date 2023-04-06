@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
@@ -42,17 +41,11 @@ public class CameraController : MonoBehaviour
 
       if (Input.GetKey(KeyCode.A))
       {
-         if (transform.position.y > 10)
-         {
-            _newZoom += zoomAmount;
-         }
+         _newZoom += zoomAmount;
       }
       if (Input.GetKey(KeyCode.E))
       {
-         if (transform.position.y < 50)
-         {
-            _newZoom -= zoomAmount;
-         }
+         _newZoom -= zoomAmount;
       }
 
       transform.position = Vector3.Lerp(transform.position, _newPos, Time.deltaTime * antiInertia);

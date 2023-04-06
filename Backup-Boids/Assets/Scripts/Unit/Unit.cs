@@ -1,7 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using NaughtyAttributes;
 using UnityEngine;
+using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace Unit
 {
@@ -32,9 +35,16 @@ namespace Unit
 
         public bool isReadyToEngage;
         private List<Unit> _unitsInRangeOfEngagement = new ();
-        [SerializeField] private Unit engagedUnit;
+        public Unit engagedUnit;
+        public Unit agressor;
 
         private bool _isDesengaged;
+
+        private bool _isShooting;
+
+        private bool _isDead;
+
+        [SerializeField, Required()] private Slider lifeBarSlider;
         #endregion
         
         #region private variables for calculus
@@ -51,7 +61,6 @@ namespace Unit
 
         private void Awake()
         {
-          
             currentHealthPoint = data.maxHealthPoint;
             if (data.canAutoEngage) isReadyToEngage = true;
         } 
@@ -84,12 +93,21 @@ namespace Unit
             };
 
             _isAnimatorNotNull = animator != null;
+            lifeBarSlider.maxValue = data.maxHealthPoint;
+            lifeBarSlider.value = data.maxHealthPoint;
         }
 
         private void Update() 
         {
+            if (_isDead) return;
             CalculateForces();
             MoveForward();
+            ManageShooting();
+        }
+
+        public void TickUpdate()
+        {
+            if (_isDead) return;
             ManageEngagement();
             ManageDesengagement();
         }
@@ -144,7 +162,13 @@ namespace Unit
                 {
                     if (unit.myFlock.faction != myFlock.faction) // Unité ennemies
                     {
-                        if (distToOtherUnit < data.engagementDist) _unitsInRangeOfEngagement.Add(unit);
+                        if (distToOtherUnit < data.engagementDist)
+                        {
+                            if (!_unitsInRangeOfEngagement.Contains(unit))
+                            {
+                                _unitsInRangeOfEngagement.Add(unit);
+                            }
+                        }
                     }
                 }
             }
@@ -257,11 +281,26 @@ namespace Unit
         #region Engagement
         private void ManageEngagement()
         {
+            if (data.canProtect)
+            {
+                foreach (var unitData in data.protectionUnitList)
+                {
+                    foreach (var unit in myFlock.unitsInFlocks)
+                    {
+                        if (unit.data == unitData && unit.agressor is not null)
+                        {
+                            Engage(unit.agressor);
+                            return;
+                        }
+                    }
+                }
+            }
+
             if (_unitsInRangeOfEngagement.Count is 0 || !isReadyToEngage || engagedUnit is not null || _isDesengaged) return;
 
             if (_unitsInRangeOfEngagement.Count is 1)
             {
-                engagedUnit = _unitsInRangeOfEngagement[0];
+                Engage(_unitsInRangeOfEngagement[0]);
                 return;
             }
 
@@ -275,6 +314,7 @@ namespace Unit
         private bool dertermineNewTarget = true;
 
         private int _indexOfCurrentTargetingPriority;
+        
         private void DetermineTarget()
         {
             if (engagedUnit is not null) return; // Si une unité est déja engagé, return
@@ -296,21 +336,19 @@ namespace Unit
                 {
                     float distToUnit = Vector3.Distance(transform.position, unit.transform.position);
 
-                    if (closestUnit is null)
+                    if (!closestUnit)
                     {
-                        distToClosestUnit = distToUnit;
                         closestUnit = unit;
-                        continue;
+                        distToClosestUnit = distToUnit;
                     }
-                   
-                    if (distToUnit < distToClosestUnit)
+                    else if (distToUnit < distToClosestUnit)
                     {
-                        distToClosestUnit = distToUnit;
                         closestUnit = unit;
+                        distToClosestUnit = distToUnit;
                     }
                 }
 
-                engagedUnit = closestUnit;
+                Engage(closestUnit);
                 return;
             }
             
@@ -333,8 +371,8 @@ namespace Unit
 
                         if (unit.currentHealthPoint < _dataForTargeting) preSelectedEngagementTarget.Add(unit);
                         break;
-                    case 0:
-                        throw new ArgumentException();
+                    
+                    case 0: throw new ArgumentException();
                 }
             }
             
@@ -365,6 +403,12 @@ namespace Unit
             }
             else return 0;
         }
+
+        private void Engage(Unit unit)
+        {
+            engagedUnit = unit;
+            engagedUnit.agressor = this;
+        }
         #endregion
 
         #region Desengagement
@@ -388,9 +432,60 @@ namespace Unit
 
         private void Desengage()
         {
+            engagedUnit.agressor = null;
             engagedUnit = null;
             _isDesengaged = true;
         }
+        #endregion
+
+        #region Shooting
+
+        private void ManageShooting()
+        {
+            if (engagedUnit is null || _isShooting) return;
+            Shoot();
+            StartCoroutine(ShootingCooldown());
+
+        }
+
+        private void Shoot()
+        {
+            _isShooting = true;
+            var shotDamage = Random.Range(data.damageRange.x, data.damageRange.y);
+            engagedUnit.TakeDamage(shotDamage);
+        }
+
+        public void TakeDamage(int damage)
+        {
+            if (_isDead) return;
+         
+            if (currentHealthPoint - damage > 0)
+            {
+                currentHealthPoint -= damage;
+                lifeBarSlider.value = currentHealthPoint;
+            }
+            else
+            {
+                currentHealthPoint = 0;
+                lifeBarSlider.value = 0;
+                StartCoroutine(Die());
+            }
+        }
+
+        private IEnumerator Die()
+        {
+            _isDead = true;
+            if (_isAnimatorNotNull) animator.SetBool("isDead", true);
+            yield return new WaitForSeconds(5);
+            gameObject.SetActive(false);
+        }
+
+        private IEnumerator ShootingCooldown()
+        {
+            yield return new WaitForSeconds(data.delayBetweenShots);
+            _isShooting = false;
+        }
+
         #endregion
         #endregion
 

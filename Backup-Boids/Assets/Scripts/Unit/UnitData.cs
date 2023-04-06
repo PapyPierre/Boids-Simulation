@@ -11,16 +11,16 @@ namespace Unit
         // ---------------------------------- Module d'Identité -------------------------------------------
 
         #region Module d'Identité
-        [Foldout("Module Identité")] public int unitId;
+        public int unitId;
         //[Foldout("Module Identité")]public string unitName;
 
-        [Foldout("Module Identité")]public int maxHealthPoint;
+        public int maxHealthPoint;
         #endregion
         
         // ---------------------------------- Module de Déplacement ----------------------------------------
 
         #region Module de Déplacement
-        [Foldout("Module de déplacement")] public UnitType unitType;
+        public UnitType unitType;
   
         public enum UnitType
         {
@@ -29,21 +29,18 @@ namespace Unit
             //TODO Souterrainne
         }
 
-        [Tooltip("Speed by default"), Foldout("Module de déplacement")] public float normalSpeed;
-        [Tooltip("Speed during combat"), Foldout("Module de déplacement")] public float attackSpeed;
-        [Tooltip("Speed when out of bound of the anchor"), Foldout("Module de déplacement")] 
-        public float renforcementSpeed;
+        [Tooltip("Speed by default")] public float normalSpeed;
+        [Tooltip("Speed during combat")] public float attackSpeed;
+        [Tooltip("Speed when out of bound of the anchor")] public float renforcementSpeed;
         #endregion
 
         // ---------------------------------- Module de Comportement en Flock ----------------------------------------
 
         #region Module de Comportement en Flock
-        [Space, Tooltip("Distance de perception des autres unités"), Foldout("Module de Comportement en Flock")] 
-        public float unitPerceptionRadius;
-        [Tooltip("Distance max entre cette unité et son ancre"), Foldout("Module de Comportement en Flock")] 
-        public float unitMaxDistFromAnchor;
+        [Space, Tooltip("Distance de perception des autres unités")] public float unitPerceptionRadius;
+        [Tooltip("Distance max entre cette unité et son ancre")] public float unitMaxDistFromAnchor;
         
-        [SerializeField] private List<UnitData> anchoringList;
+        //[SerializeField] private List<UnitData> anchoringList;
 
         //[Tooltip("Hors Combat"), SerializeField] private float minDistFromOtherUnitInFlock;
         //[Tooltip("Hors Combat"), SerializeField] private float maxDistFromOtherUnitInFlock;
@@ -52,10 +49,10 @@ namespace Unit
         // ---------------------------------- Module de Comportement en Combat ----------------------------------------
 
         #region Module de Comportement en Combat
-        [Foldout("Module de Comportement en Combat")] public bool canAutoEngage;
-        [Foldout("Module de Comportement en Combat")] public int engagementDist;
-        [Foldout("Module de Comportement en Combat")] public bool canDesengage;
-        [Foldout("Module de Comportement en Combat")] public List<DesengagementTrigger> desengagementTriggers;
+        public bool canAutoEngage;
+        public int engagementDist;
+        public bool canDesengage; 
+        public List<DesengagementTrigger> desengagementTriggers;
 
         public enum DesengagementTrigger
         {
@@ -63,9 +60,9 @@ namespace Unit
             ByHealthPoint // Si currentHealthPoint < dammageThreshold
         }
 
-        [Foldout("Module de Comportement en Combat")] public int desengamentDist;
-        [Foldout("Module de Comportement en Combat")] public int dammageThreshold;
-        [Foldout("Module de Comportement en Combat")] public PossibleDesengamentSpeed desengamentSpeed;
+        public int desengamentDist;
+        public int dammageThreshold;
+        public PossibleDesengamentSpeed desengamentSpeed;
         
         public enum PossibleDesengamentSpeed
         {
@@ -74,15 +71,14 @@ namespace Unit
             RenforcementSpeed
         }
 
-        //[Space, SerializeField, Foldout("Module de Comportement en Combat")] private bool canProtect;
-        
-        //[Foldout("Module de Comportement en Combat")] public List<UnitData> protectionUnitList;
+        [Space] public bool canProtect;
+        public List<UnitData> protectionUnitList;
         #endregion
 
         // ---------------------------------- Module Ciblage ---------------------------------------------
 
         #region Module Ciblage
-        [Tooltip("Si une donnée est null ou à 0, elle n'est pas pris en compte"), Foldout("Module Ciblage")] 
+        [Tooltip("Si une donnée est null ou à 0, elle n'est pas pris en compte")] 
         public List<TargetingPrioOptions> targetingPriority;
 
         [Serializable]
@@ -97,7 +93,7 @@ namespace Unit
             private bool ShowHp() { return hpThreshold > 0; }
         }
 
-        //[SerializeField, Foldout("Module Ciblage")] private TargetingModes targetingSeverity;
+        //TODO [SerializeField, Foldout("Module Ciblage")] private TargetingModes targetingSeverity;
 
         enum TargetingModes
         {
@@ -110,14 +106,14 @@ namespace Unit
         // ---------------------------------- Module Armement ---------------------------------------------
 
         #region Module Armement
-        //[Tooltip("Les dégats infligé par cette unité seront compris entre ces valeurs"),
-        // MinMaxSlider(0.0f, 100.0f), SerializeField, Foldout("Module Armement")] private Vector2Int damageRange;
+        [Tooltip("Les dégats infligé par cette unité seront compris entre ces valeurs"), MinMaxSlider(0.0f, 100.0f)]
+        public Vector2Int damageRange;
         
-        //[Tooltip("Cette unité pourra tiré sur une autre unité situé à une distance comprise entre ces valeurs"),
-        // MinMaxSlider(0.0f, 100.0f), SerializeField, Foldout("Module Armement")] private Vector2Int shootingDistanceRange;
+        //TODO [Tooltip("Cette unité pourra tiré sur une autre unité situé à une distance comprise entre ces valeurs"),
+        //TODO MinMaxSlider(0.0f, 100.0f), Foldout("Module Armement")] public Vector2Int shootingDistanceRange;
         
-        //[SerializeField, Foldout("Module Armement")] private float delayBetweenShots; // En ms
-        //[SerializeField, Foldout("Module Armement")] private bool canShootUndergroundUnits;
+        public float delayBetweenShots; // En ms
+        //public bool canShootUndergroundUnits;
         #endregion
         
         // ---------------------------------- Module Physique & Apparence ---------------------------------------------

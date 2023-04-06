@@ -198,7 +198,7 @@ public class FlockManager : MonoBehaviour
             }
         }
         
-        if (!_isUpdatingFlocksStates) StartCoroutine(UpdateFlocksStates());
+        if (!_isUpdatingFlocksStates) StartCoroutine(TickUpdateFlocksStates());
     }
 
     private void SetUpUnit(Vector3 spawnPos, GameObject unitPrefab, Flock newFlock)
@@ -219,7 +219,7 @@ public class FlockManager : MonoBehaviour
     }
     
     // Recurvise Update of all flocks states
-    private IEnumerator UpdateFlocksStates()
+    private IEnumerator TickUpdateFlocksStates()
     {
         _isUpdatingFlocksStates = true;
 
@@ -228,6 +228,7 @@ public class FlockManager : MonoBehaviour
             var nbOfUnitOutOfBound = 0;
             foreach (var unit in flock.unitsInFlocks)
             {
+                unit.TickUpdate();
                 if (unit.isOutOfBoundOfAnchor) nbOfUnitOutOfBound++;
             }
 
@@ -251,10 +252,10 @@ public class FlockManager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(flocksStateUpdateTime);
-        StartCoroutine(UpdateFlocksStates());
+        StartCoroutine(TickUpdateFlocksStates());
     }
     
-    public void MergeFlocks(FlockManager.Flock flockToMerge, FlockManager.Flock targetFlock)
+    public void MergeFlocks(Flock flockToMerge, Flock targetFlock)
     {
         foreach (var unit in targetFlock.unitsInFlocks)
         {

@@ -527,11 +527,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   maxHeight: 5
-  minHeight: 20
+  minHeight: 30
   heightDampening: 5
   keyboardZoomingSensitivity: 2
   scrollWheelZoomingSensitivity: 50
-  limitMap: 1
+  limitMap: 0
   limitX: 50
   limitY: 50
   targetFollow: {fileID: 0}
@@ -771,7 +771,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   flocksStateUpdateTime: 0.5
-  unitCountInNewFlock: 5
+  unitCountInNewFlock: 20
   newFlockType: 1
   newFlockFaction: 0
   defaultUnitPerceptionRadius: 3
@@ -1437,7 +1437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190b65326ac7b484590e7118d09825a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showGizmosOnSelectedUnitOnly: 0
+  showGizmosOnSelectedUnitOnly: 1
   showMaxDistFromAnchor: 0
   showInfluenceOfOthersFlockUnits: 0
   showUnitsVelocity: 0

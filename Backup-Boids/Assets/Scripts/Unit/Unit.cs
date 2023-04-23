@@ -34,15 +34,16 @@ namespace Unit
         public float currentSpeed;
 
         public bool isReadyToEngage;
-        private List<Unit> _unitsInRangeOfEngagement = new ();
+        [SerializeField, ReadOnly] private List<Unit> unitsInRangeOfEngagement = new ();
         public Unit engagedUnit;
         public Unit agressor;
 
-        private bool _isDesengaged;
-
+        [SerializeField, ReadOnly] private bool isDesengaged;
         private bool _isShooting;
-
         private bool _isDead;
+        
+        [SerializeField, ReadOnly] private bool dertermineNewTarget = true;
+        private int _indexOfCurrentTargetingPriority;
 
         [SerializeField, Required()] private Slider lifeBarSlider;
         #endregion
@@ -121,7 +122,7 @@ namespace Unit
 
             int unitsNearby = 0;
             
-            _unitsInRangeOfEngagement.Clear();
+            unitsInRangeOfEngagement.Clear();
             
             foreach (var unit in _flockManager.allActiveUnits)
             {
@@ -166,14 +167,14 @@ namespace Unit
                     {
                         if (distToOtherUnit < data.engagementDist)
                         {
-                            if (!_unitsInRangeOfEngagement.Contains(unit))
+                            if (!unitsInRangeOfEngagement.Contains(unit))
                             {
-                                _unitsInRangeOfEngagement.Add(unit);
+                                unitsInRangeOfEngagement.Add(unit);
                             }
                         }
                         else
                         {
-                            if (_unitsInRangeOfEngagement.Contains(unit)) _unitsInRangeOfEngagement.Remove(unit);
+                            if (unitsInRangeOfEngagement.Contains(unit)) unitsInRangeOfEngagement.Remove(unit);
                         }
                     }
                 }
@@ -231,7 +232,7 @@ namespace Unit
                 return;
             }
 
-            if (_isDesengaged)
+            if (isDesengaged)
             {
                 var dir = myBase.position - transform.position;
                 Vector3 returnToBaseForce = dir.normalized;
@@ -253,7 +254,7 @@ namespace Unit
             var correctedForce = _force;
             if (data.unitType is UnitData.UnitType.Terrestre) correctedForce = new Vector3(_force.x, 0, _force.z);
 
-            if (_isDesengaged)
+            if (isDesengaged)
             {
                 var speed = data.desengamentSpeed switch
                 {
@@ -291,7 +292,7 @@ namespace Unit
             {
                 foreach (var unitData in data.protectionUnitList)
                 {
-                    foreach (var unit in myFlock.unitsInFlocks)
+                    foreach (var unit in myFlock.activeUnitsInFlocks)
                     {
                         if (unit.data == unitData && unit.agressor is not null)
                         {
@@ -302,11 +303,11 @@ namespace Unit
                 }
             }
 
-            if (_unitsInRangeOfEngagement.Count is 0 || !isReadyToEngage || engagedUnit is not null || _isDesengaged) return;
+            if (unitsInRangeOfEngagement.Count is 0 || !isReadyToEngage || engagedUnit is not null || isDesengaged) return;
 
-            if (_unitsInRangeOfEngagement.Count is 1)
+            if (unitsInRangeOfEngagement.Count is 1)
             {
-                Engage(_unitsInRangeOfEngagement[0]);
+                Engage(unitsInRangeOfEngagement[0]);
                 return;
             }
 
@@ -316,28 +317,22 @@ namespace Unit
                 dertermineNewTarget = false;
             }
         }
-
-        private bool dertermineNewTarget = true;
-
-        private int _indexOfCurrentTargetingPriority;
         
         private void DetermineTarget()
         {
             if (engagedUnit is not null) return; // Si une unité est déja engagé, return
                 
-            if (preSelectedEngagementTarget.Count is 0) LookForTargetInGivenList(_unitsInRangeOfEngagement, _indexOfCurrentTargetingPriority);
+            if (preSelectedEngagementTarget.Count is 0) LookForTargetInGivenList(unitsInRangeOfEngagement, _indexOfCurrentTargetingPriority);
             else LookForTargetInGivenList(preSelectedEngagementTarget, _indexOfCurrentTargetingPriority);
         }
 
         private void LookForTargetInGivenList(List<Unit> unitsTargetable, int i)
         {
-            preSelectedEngagementTarget.Clear();
-
             if (i >= data.targetingPriority.Count) // Si il reste + que 1 untié après avoir passer touts les priorité de ciblage
             {
                 Unit closestUnit = null;
                 float distToClosestUnit = 0;
-
+                
                 foreach (var unit in unitsTargetable)
                 {
                     float distToUnit = Vector3.Distance(transform.position, unit.transform.position);
@@ -353,12 +348,12 @@ namespace Unit
                         distToClosestUnit = distToUnit;
                     }
                 }
-
+                
                 Engage(closestUnit);
                 return;
             }
             
-            foreach (var unit in unitsTargetable)
+            foreach (var unit in new List<Unit>(unitsTargetable))
             {
                 switch (SelectTargetingPrioWithGivenIndex(i))
                 {
@@ -411,7 +406,16 @@ namespace Unit
         }
 
         private void Engage(Unit unit)
-        { 
+        {
+            if (unit is null)
+            {
+                Debug.LogError("unit to engage is null");
+                return;
+            }
+            
+            dertermineNewTarget = true;
+            _indexOfCurrentTargetingPriority = 0;
+            
             engagedUnit = unit; 
             engagedUnit.agressor = this;
         }
@@ -421,7 +425,7 @@ namespace Unit
 
         private void ManageDesengagement()
         {
-            if (!data.canDesengage || data.desengagementTriggers.Count is 0 || _isDesengaged) return;
+            if (!data.canDesengage || data.desengagementTriggers.Count is 0 || isDesengaged) return;
 
             foreach (var desengagementTrigger in data.desengagementTriggers)
             {
@@ -439,9 +443,12 @@ namespace Unit
         private void Desengage()
         {
             if (_isAnimatorNotNull) animator.SetBool("isAttacking", false);
-            engagedUnit.agressor = null;
+            if (data.unitType is UnitData.UnitType.Terrestre)
+            {
+                engagedUnit.agressor = null;
+            }
             engagedUnit = null;
-            _isDesengaged = true;
+            isDesengaged = true;
         }
         #endregion
 
@@ -462,9 +469,10 @@ namespace Unit
         private void Shoot()
         {
             _isShooting = true;
-            transform.LookAt(engagedUnit.transform.position, transform.up);
+            if (data.unitType is UnitData.UnitType.Terrestre) transform.LookAt(engagedUnit.transform.position, transform.up);
             if (_isAnimatorNotNull) animator.SetBool("isAttacking", true);
             var shotDamage = Random.Range(data.damageRange.x, data.damageRange.y);
+            engagedUnit.agressor = this;
             engagedUnit.TakeDamage(shotDamage);
             if (engagedUnit.currentHealthPoint <= 0) StopAttacking();
         }
@@ -478,21 +486,39 @@ namespace Unit
                 currentHealthPoint -= damage;
                 lifeBarSlider.value = currentHealthPoint;
             }
-            else
-            {
-                currentHealthPoint = 0;
-                lifeBarSlider.value = 0;
-                StartCoroutine(Die());
-            }
+            else StartCoroutine(Die());
         }
 
         private IEnumerator Die()
         {
-            if (_isAnimatorNotNull) animator.SetBool("isAttacking", false);
             _isDead = true;
+
+            currentHealthPoint = 0;
+            lifeBarSlider.value = 0;
+
+            agressor.dertermineNewTarget = true;
+
+            if (engagedUnit is not null)
+            {
+                if (engagedUnit.agressor is not null)
+                {
+                    engagedUnit.agressor = null;
+                }
+            }
+
+            if (_isAnimatorNotNull)
+            {
+                animator.SetBool("isAttacking", false);
+                animator.SetBool("isDead", true);
+            }
+
+            myFlock.activeUnitsInFlocks.Remove(this);
+            if (myFlock.activeUnitsInFlocks.Count <= 0) myFlock.anchor.gameObject.SetActive(false);
             _flockManager.allActiveUnits.Remove(this);
-            if (_isAnimatorNotNull) animator.SetBool("isDead", true);
-            yield return new WaitForSeconds(5);
+            lifeBarSlider.transform.parent.gameObject.SetActive(false);
+            
+            if (data.unitType is UnitData.UnitType.Aérienne) yield return new WaitForSeconds(0.1f);
+            else yield return new WaitForSeconds(5);
             gameObject.SetActive(false);
         }
 

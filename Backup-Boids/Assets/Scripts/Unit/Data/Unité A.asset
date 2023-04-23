@@ -19,11 +19,19 @@ MonoBehaviour:
   attackSpeed: 8
   renforcementSpeed: 10
   unitPerceptionRadius: 7
-  unitMaxDistFromAnchor: 20
-  anchoringList: []
+  unitMaxDistFromAnchor: 15
   canAutoEngage: 1
   engagementDist: 10
+  canDesengage: 1
+  desengagementTriggers: 01000000
+  desengamentDist: 0
+  dammageThreshold: 90
+  desengamentSpeed: 2
+  canProtect: 0
+  protectionUnitList: []
   targetingPriority:
   - unitData: {fileID: 0}
     minDist: 5
     hpThreshold: 0
+  damageRange: {x: 30, y: 35}
+  delayBetweenShots: 0.2

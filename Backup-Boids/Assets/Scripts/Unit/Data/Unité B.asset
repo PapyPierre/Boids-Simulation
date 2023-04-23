@@ -36,5 +36,5 @@ MonoBehaviour:
   - unitData: {fileID: 0}
     minDist: 5
     hpThreshold: 0
-  damageRange: {x: 15, y: 25}
-  delayBetweenShots: 1
+  damageRange: {x: 15, y: 40}
+  delayBetweenShots: 0.5

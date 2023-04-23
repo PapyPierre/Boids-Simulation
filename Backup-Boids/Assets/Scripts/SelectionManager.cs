@@ -73,7 +73,9 @@ public class SelectionManager : MonoBehaviour
             if (mouseAboveThisUnit.myFlock.faction != currentlySelectedFlock.faction)
             {
                // Move to Ennemy and ready to engage
-               currentlySelectedFlock.anchor.MoveAnchorTo(mouseAboveThisUnit.transform.position);
+               var tempPos = mouseAboveThisUnit.transform.position;
+               var tempNewPos = new Vector3(tempPos.x, currentlySelectedFlock.anchor.transform.position.y, tempPos.z);
+               currentlySelectedFlock.anchor.MoveAnchorTo(tempNewPos);
                foreach (var unit in currentlySelectedFlock.unitsInFlocks) unit.isReadyToEngage = true;
             }
             else // Si le joueur click sur une unité dont la flock appartient à la même faction que la flock de l'unité sélectionné
@@ -96,10 +98,7 @@ public class SelectionManager : MonoBehaviour
       }
    }
 
-   public void OnRightButtonClick()
-   {
-     UnSelectAll();
-   }
+   public void OnRightButtonClick() => UnSelectAll();
 
    private void UnSelectAll()
    {

@@ -274,7 +274,6 @@ public class FlockManager : MonoBehaviour
        _selectionManager.currentlySelectedFlock = targetFlock;
     }
 
-    
     private void OnDrawGizmos() 
     {     
         if (!Application.isPlaying) return;

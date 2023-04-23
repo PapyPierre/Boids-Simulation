@@ -462,6 +462,7 @@ namespace Unit
         private void Shoot()
         {
             _isShooting = true;
+            transform.LookAt(engagedUnit.transform.position, transform.up);
             if (_isAnimatorNotNull) animator.SetBool("isAttacking", true);
             var shotDamage = Random.Range(data.damageRange.x, data.damageRange.y);
             engagedUnit.TakeDamage(shotDamage);

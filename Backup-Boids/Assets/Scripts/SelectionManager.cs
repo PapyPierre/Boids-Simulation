@@ -76,7 +76,7 @@ public class SelectionManager : MonoBehaviour
                var tempPos = mouseAboveThisUnit.transform.position;
                var tempNewPos = new Vector3(tempPos.x, currentlySelectedFlock.anchor.transform.position.y, tempPos.z);
                currentlySelectedFlock.anchor.MoveAnchorTo(tempNewPos);
-               foreach (var unit in currentlySelectedFlock.unitsInFlocks) unit.isReadyToEngage = true;
+               foreach (var unit in currentlySelectedFlock.activeUnitsInFlocks) unit.isReadyToEngage = true;
             }
             else // Si le joueur click sur une unité dont la flock appartient à la même faction que la flock de l'unité sélectionné
             {
@@ -92,7 +92,7 @@ public class SelectionManager : MonoBehaviour
       currentlySelectedUnits.Add(unit); // Sélectionner l'unité
       currentlySelectedFlock = unit.myFlock; // Sélectionne la flock de l'unité
          
-      foreach (var u in currentlySelectedFlock.unitsInFlocks)
+      foreach (var u in currentlySelectedFlock.activeUnitsInFlocks)
       {
          u.selectionCircle.SetActive(true);
       }
@@ -106,7 +106,7 @@ public class SelectionManager : MonoBehaviour
 
       if (currentlySelectedFlock is not null)
       { 
-         foreach (var unit in currentlySelectedFlock.unitsInFlocks)
+         foreach (var unit in currentlySelectedFlock.activeUnitsInFlocks)
          {
             unit.selectionCircle.SetActive(false);
          }

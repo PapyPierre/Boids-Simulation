@@ -32,7 +32,7 @@ public class FlockManager : MonoBehaviour
             {
                 _currentState = value;
 
-                foreach (var unit in unitsInFlocks)
+                foreach (var unit in activeUnitsInFlocks)
                 {
                     unit.currentSpeed = value switch
                     {                    
@@ -47,7 +47,7 @@ public class FlockManager : MonoBehaviour
 
         [Tooltip("Point d'encrage d'une flock, les unités vont essayer de rester proche")] public FlockAnchor anchor;
         public Color flockColor;
-        public List<Unit.Unit> unitsInFlocks = new();
+        public List<Unit.Unit> activeUnitsInFlocks = new();
     }
 
     public enum FlockState
@@ -215,7 +215,7 @@ public class FlockManager : MonoBehaviour
             _ => throw new ArgumentOutOfRangeException(nameof(newFlock.faction))
         };
         allActiveUnits.Add(newUnit);
-        newFlock.unitsInFlocks.Add(newUnit);
+        newFlock.activeUnitsInFlocks.Add(newUnit);
     }
     
     // Recurvise Update of all flocks states
@@ -226,19 +226,19 @@ public class FlockManager : MonoBehaviour
         foreach (var flock in allFlocks)
         {
             var nbOfUnitOutOfBound = 0;
-            foreach (var unit in flock.unitsInFlocks)
+            foreach (var unit in flock.activeUnitsInFlocks)
             {
                 unit.TickUpdate();
                 if (unit.isOutOfBoundOfAnchor) nbOfUnitOutOfBound++;
             }
 
-            if (nbOfUnitOutOfBound > (1 - percentageOfUnitInAnchorToBeStationnary / 100) * flock.unitsInFlocks.Count)
+            if (nbOfUnitOutOfBound > (1 - percentageOfUnitInAnchorToBeStationnary / 100) * flock.activeUnitsInFlocks.Count)
             {
                 flock.CurrentState = FlockState.EnDéplacement;
             }
             else flock.CurrentState = FlockState.Stationnaire;
             
-            foreach (var unit in flock.unitsInFlocks)
+            foreach (var unit in flock.activeUnitsInFlocks)
             {  
                 if (flock.CurrentState is FlockState.Stationnaire) 
                 { 
@@ -257,15 +257,15 @@ public class FlockManager : MonoBehaviour
     
     public void MergeFlocks(Flock flockToMerge, Flock targetFlock)
     {
-        foreach (var unit in targetFlock.unitsInFlocks)
+        foreach (var unit in targetFlock.activeUnitsInFlocks)
         {
             unit.selectionCircle.SetActive(true);
         }
       
-        foreach (var unit in flockToMerge.unitsInFlocks)
+        foreach (var unit in flockToMerge.activeUnitsInFlocks)
         {
             unit.myFlock = targetFlock;
-            targetFlock.unitsInFlocks.Add(unit);
+            targetFlock.activeUnitsInFlocks.Add(unit);
         }
       
         flockToMerge.anchor.gameObject.SetActive(false);
@@ -282,10 +282,10 @@ public class FlockManager : MonoBehaviour
              !GameManager.instance.showMaxDistFromAnchor) return;
         if (allFlocks.Count > 0)
         {
-            if ( _selectionManager.currentlySelectedFlock.unitsInFlocks[0].data.unitMaxDistFromAnchor > 0)
+            if ( _selectionManager.currentlySelectedFlock.activeUnitsInFlocks[0].data.unitMaxDistFromAnchor > 0)
             {
                 Gizmos.DrawWireSphere( _selectionManager.currentlySelectedFlock.anchor.transform.position, 
-                    _selectionManager.currentlySelectedFlock.unitsInFlocks[0].data.unitMaxDistFromAnchor);
+                    _selectionManager.currentlySelectedFlock.activeUnitsInFlocks[0].data.unitMaxDistFromAnchor);
             }
             else Gizmos.DrawWireSphere( _selectionManager.currentlySelectedFlock.anchor.transform.position, 
                 defaultUnitMaxDistFromAnchor);

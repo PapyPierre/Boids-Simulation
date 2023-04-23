@@ -33,6 +33,6 @@ public class FlockAnchor : MonoBehaviour
       transform.position = pos;
       SetUpLineRender();
       _myFlock.CurrentState = FlockManager.FlockState.EnDéplacement;
-      foreach (var unit in _myFlock.unitsInFlocks) unit.isInIdle = false;
+      foreach (var unit in _myFlock.activeUnitsInFlocks) unit.isInIdle = false;
    }
 }

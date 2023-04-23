@@ -120,8 +120,10 @@ namespace Unit
             Vector3 headingSum = Vector3.zero;
 
             int unitsNearby = 0;
-
-            foreach (var unit in _flockManager.allUnits)
+            
+            _unitsInRangeOfEngagement.Clear();
+            
+            foreach (var unit in _flockManager.allActiveUnits)
             {
                 if (this == unit) continue;
                 
@@ -168,6 +170,10 @@ namespace Unit
                             {
                                 _unitsInRangeOfEngagement.Add(unit);
                             }
+                        }
+                        else
+                        {
+                            if (_unitsInRangeOfEngagement.Contains(unit)) _unitsInRangeOfEngagement.Remove(unit);
                         }
                     }
                 }
@@ -281,7 +287,7 @@ namespace Unit
         #region Engagement
         private void ManageEngagement()
         {
-            if (data.canProtect)
+            if (data.canProtect) // Aucune unité peut protéger pour le moment 
             {
                 foreach (var unitData in data.protectionUnitList)
                 {
@@ -336,7 +342,7 @@ namespace Unit
                 {
                     float distToUnit = Vector3.Distance(transform.position, unit.transform.position);
 
-                    if (!closestUnit)
+                    if (closestUnit is null)
                     {
                         closestUnit = unit;
                         distToClosestUnit = distToUnit;
@@ -405,8 +411,8 @@ namespace Unit
         }
 
         private void Engage(Unit unit)
-        {
-            engagedUnit = unit;
+        { 
+            engagedUnit = unit; 
             engagedUnit.agressor = this;
         }
         #endregion
@@ -432,6 +438,7 @@ namespace Unit
 
         private void Desengage()
         {
+            if (_isAnimatorNotNull) animator.SetBool("isAttacking", false);
             engagedUnit.agressor = null;
             engagedUnit = null;
             _isDesengaged = true;
@@ -443,16 +450,22 @@ namespace Unit
         private void ManageShooting()
         {
             if (engagedUnit is null || _isShooting) return;
+            if (engagedUnit.currentHealthPoint <= 0)
+            {
+                StopAttacking();
+                return;
+            }
             Shoot();
             StartCoroutine(ShootingCooldown());
-
         }
 
         private void Shoot()
         {
             _isShooting = true;
+            if (_isAnimatorNotNull) animator.SetBool("isAttacking", true);
             var shotDamage = Random.Range(data.damageRange.x, data.damageRange.y);
             engagedUnit.TakeDamage(shotDamage);
+            if (engagedUnit.currentHealthPoint <= 0) StopAttacking();
         }
 
         public void TakeDamage(int damage)
@@ -474,7 +487,9 @@ namespace Unit
 
         private IEnumerator Die()
         {
+            if (_isAnimatorNotNull) animator.SetBool("isAttacking", false);
             _isDead = true;
+            _flockManager.allActiveUnits.Remove(this);
             if (_isAnimatorNotNull) animator.SetBool("isDead", true);
             yield return new WaitForSeconds(5);
             gameObject.SetActive(false);
@@ -487,6 +502,14 @@ namespace Unit
         }
 
         #endregion
+
+        private void StopAttacking()
+        {
+            if (_isAnimatorNotNull) animator.SetBool("isAttacking", false);
+            engagedUnit.agressor = null;
+            engagedUnit = null;
+        }
+        
         #endregion
 
         #region Selection

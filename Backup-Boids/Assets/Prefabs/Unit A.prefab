@@ -223,7 +223,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: e53d73088f44b3647a53fecd0f64437d, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.78431374}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.5882353}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -466,7 +466,7 @@ MonoBehaviour:
   isReadyToEngage: 0
   engagedUnit: {fileID: 0}
   agressor: {fileID: 0}
-  _lifeBarSlider: {fileID: 3227284944402241170}
+  lifeBarSlider: {fileID: 3227284944402241170}
 --- !u!65 &3504138952852548479
 BoxCollider:
   m_ObjectHideFlags: 0

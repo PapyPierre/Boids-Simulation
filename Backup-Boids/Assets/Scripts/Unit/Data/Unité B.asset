@@ -20,9 +20,8 @@ MonoBehaviour:
   renforcementSpeed: 10
   unitPerceptionRadius: 0
   unitMaxDistFromAnchor: 0
-  anchoringList: []
   canAutoEngage: 1
-  engagementDist: 5
+  engagementDist: 12
   canDesengage: 0
   desengagementTriggers: 
   desengamentDist: 0
@@ -38,5 +37,4 @@ MonoBehaviour:
     minDist: 5
     hpThreshold: 0
   damageRange: {x: 15, y: 25}
-  shootingDistanceRange: {x: 0, y: 20}
   delayBetweenShots: 1

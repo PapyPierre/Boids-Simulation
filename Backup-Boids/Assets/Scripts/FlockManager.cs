@@ -96,7 +96,7 @@ public class FlockManager : MonoBehaviour
     [SerializeField] private bool showAllFlocksAndUnitsInInspector; // Used only for inspector purpose
     
     [ShowIf("showAllFlocksAndUnitsInInspector"), ReadOnly] public List<Flock> allFlocks;
-    [ShowIf("showAllFlocksAndUnitsInInspector"), ReadOnly] public List<Unit.Unit> allUnits;
+    [ShowIf("showAllFlocksAndUnitsInInspector"), ReadOnly] public List<Unit.Unit> allActiveUnits;
     #endregion
 
     #region Required GameObjects
@@ -133,7 +133,7 @@ public class FlockManager : MonoBehaviour
         }
         else instance = this;
         
-        allUnits.Clear();
+        allActiveUnits.Clear();
         allFlocks.Clear();
     }
 
@@ -214,7 +214,7 @@ public class FlockManager : MonoBehaviour
             FlockFaction.GreenFaction => greenBase,
             _ => throw new ArgumentOutOfRangeException(nameof(newFlock.faction))
         };
-        allUnits.Add(newUnit);
+        allActiveUnits.Add(newUnit);
         newFlock.unitsInFlocks.Add(newUnit);
     }
     

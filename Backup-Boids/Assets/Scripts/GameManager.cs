@@ -38,10 +38,10 @@ public class GameManager : MonoBehaviour
    {
       if (Input.GetKeyDown(KeyCode.F2))
       {
-         foreach (var unit in _flockManager.allUnits) unit.gameObject.SetActive(false);
+         foreach (var unit in _flockManager.allActiveUnits) unit.gameObject.SetActive(false);
          foreach (var flock in  _flockManager.allFlocks) flock.anchor.gameObject.SetActive(false);
          
-         _flockManager.allUnits.Clear();
+         _flockManager.allActiveUnits.Clear();
          _flockManager.allFlocks.Clear();
       }
    }

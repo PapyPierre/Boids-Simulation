@@ -504,12 +504,55 @@ MonoBehaviour:
   m_GameObject: {fileID: 330585543}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d98bc34f2d645c64d9109f9fba25cedb, type: 3}
+  m_Script: {fileID: 11500000, guid: 28ef8c68bade09b41aca258d42a632f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camSpeed: 2
-  antiInertia: 3
-  zoomAmount: {x: 0.8, y: -0.8, z: 0}
+  lastTab: 0
+  movementSettingsFoldout: 0
+  zoomingSettingsFoldout: 0
+  rotationSettingsFoldout: 0
+  heightSettingsFoldout: 0
+  mapLimitSettingsFoldout: 0
+  targetingSettingsFoldout: 0
+  inputSettingsFoldout: 0
+  useFixedUpdate: 0
+  keyboardMovementSpeed: 40
+  screenEdgeMovementSpeed: 50
+  followingSpeed: 5
+  rotationSped: 25
+  panningSpeed: 10
+  mouseRotationSpeed: 10
+  autoHeight: 1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  maxHeight: 5
+  minHeight: 20
+  heightDampening: 5
+  keyboardZoomingSensitivity: 2
+  scrollWheelZoomingSensitivity: 50
+  limitMap: 1
+  limitX: 50
+  limitY: 50
+  targetFollow: {fileID: 0}
+  targetOffset: {x: 0, y: 0, z: 0}
+  useScreenEdgeInput: 1
+  screenEdgeBorder: 25
+  useKeyboardInput: 1
+  horizontalAxis: Horizontal
+  verticalAxis: Vertical
+  usePanning: 1
+  panningKey: 325
+  useKeyboardZooming: 1
+  zoomInKey: 97
+  zoomOutKey: 101
+  useScrollwheelZooming: 1
+  zoomingAxis: Mouse ScrollWheel
+  useKeyboardRotation: 1
+  rotateRightKey: 120
+  rotateLeftKey: 119
+  useMouseRotation: 1
+  mouseRotationKey: 324
 --- !u!1001 &388400107
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -728,7 +771,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   flocksStateUpdateTime: 0.5
-  unitCountInNewFlock: 20
+  unitCountInNewFlock: 5
   newFlockType: 1
   newFlockFaction: 0
   defaultUnitPerceptionRadius: 3
@@ -744,7 +787,7 @@ MonoBehaviour:
   percentageOfUnitInAnchorToBeStationnary: 70
   showAllFlocksAndUnitsInInspector: 1
   allFlocks: []
-  allUnits: []
+  allActiveUnits: []
   blueBase: {fileID: 864846425}
   redBase: {fileID: 1956105613}
   greenBase: {fileID: 482155279}
@@ -1400,8 +1443,8 @@ MonoBehaviour:
   showUnitsVelocity: 0
   showUnitsAnchorAttraction: 0
   showUnitsPerceptionRange: 0
-  showUnitsEngagementRange: 0
-  showUnitdEngagedUnits: 0
+  showUnitsEngagementRange: 1
+  showUnitdEngagedUnits: 1
 --- !u!4 &1063040417
 Transform:
   m_ObjectHideFlags: 0

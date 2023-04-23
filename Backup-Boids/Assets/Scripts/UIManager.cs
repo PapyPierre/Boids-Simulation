@@ -26,7 +26,7 @@ public class UIManager : MonoBehaviour
         {       
             fpsTMP.text = "FPS: " + Mathf.RoundToInt(1 / Time.unscaledDeltaTime);
             nbFlocksTMP.text = "Flocks number: " + _flockManager.allFlocks.Count;
-            nbUnitsTMP.text = "Units number: " + _flockManager.allUnits.Count;
+            nbUnitsTMP.text = "Units number: " + _flockManager.allActiveUnits.Count;
         }
     }
 }

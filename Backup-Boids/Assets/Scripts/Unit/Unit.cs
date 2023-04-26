@@ -417,6 +417,14 @@ namespace Unit
                 Debug.LogError("unit to engage is null");
                 return;
             }
+
+            if (unit.isDead)
+            {
+                if (unitsInRangeOfEngagement.Contains(unit)) unitsInRangeOfEngagement.Remove(unit);
+                else if (preSelectedEngagementTarget.Contains(unit)) preSelectedEngagementTarget.Remove(unit);
+                ManageEngagement();
+                return;
+            }
             
             engagedUnit = unit; 
             engagedUnit.agressor = this;

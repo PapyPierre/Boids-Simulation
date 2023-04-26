@@ -37,13 +37,15 @@ namespace Unit
         [SerializeField, ReadOnly] private List<Unit> unitsInRangeOfEngagement = new ();
         public Unit engagedUnit;
         public Unit agressor;
+        
+        [SerializeField, ReadOnly] List<Unit> preSelectedEngagementTarget = new();
+        private int _dataForTargeting;
 
         [SerializeField, ReadOnly] private bool isDesengaged;
         private bool _isShooting;
-        private bool _isDead;
+        [SerializeField, ReadOnly] private bool isDead;
         
-        [SerializeField, ReadOnly] private bool dertermineNewTarget = true;
-        private int _indexOfCurrentTargetingPriority;
+        [SerializeField, ReadOnly] private int _indexOfCurrentTargetingPriority;
 
         [SerializeField, Required()] private Slider lifeBarSlider;
         #endregion
@@ -100,7 +102,7 @@ namespace Unit
 
         private void Update() 
         {
-            if (_isDead) return;
+            if (isDead) return;
             CalculateForces();
             MoveForward();
             ManageShooting();
@@ -108,7 +110,7 @@ namespace Unit
 
         public void TickUpdate()
         {
-            if (_isDead) return;
+            if (isDead) return;
             ManageEngagement();
             ManageDesengagement();
         }
@@ -281,9 +283,6 @@ namespace Unit
         #endregion
 
         #region Combat Behaviour
-        
-        List<Unit> preSelectedEngagementTarget = new();
-        private int _dataForTargeting;
 
         #region Engagement
         private void ManageEngagement()
@@ -311,11 +310,13 @@ namespace Unit
                 return;
             }
 
-            if (dertermineNewTarget)
+            if (preSelectedEngagementTarget.Count is 1)
             {
-                DetermineTarget(); // Parmis celle à porté
-                dertermineNewTarget = false;
+                Engage(preSelectedEngagementTarget[0]);
+                return;
             }
+
+            DetermineTarget(); // Parmis celle à porté
         }
         
         private void DetermineTarget()
@@ -323,6 +324,7 @@ namespace Unit
             if (engagedUnit is not null) return; // Si une unité est déja engagé, return
                 
             if (preSelectedEngagementTarget.Count is 0) LookForTargetInGivenList(unitsInRangeOfEngagement, _indexOfCurrentTargetingPriority);
+            else if (preSelectedEngagementTarget.Count is 1) Engage(preSelectedEngagementTarget[0]);
             else LookForTargetInGivenList(preSelectedEngagementTarget, _indexOfCurrentTargetingPriority);
         }
 
@@ -353,6 +355,8 @@ namespace Unit
                 return;
             }
             
+            preSelectedEngagementTarget.Clear();
+            
             foreach (var unit in new List<Unit>(unitsTargetable))
             {
                 switch (SelectTargetingPrioWithGivenIndex(i))
@@ -377,7 +381,7 @@ namespace Unit
                 }
             }
             
-            if (preSelectedEngagementTarget.Count == 1) engagedUnit = preSelectedEngagementTarget[0];
+            if (preSelectedEngagementTarget.Count == 1) Engage(preSelectedEngagementTarget[0]);
             else
             {
                 _indexOfCurrentTargetingPriority++;
@@ -405,6 +409,7 @@ namespace Unit
             else return 0;
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private void Engage(Unit unit)
         {
             if (unit is null)
@@ -413,11 +418,10 @@ namespace Unit
                 return;
             }
             
-            dertermineNewTarget = true;
-            _indexOfCurrentTargetingPriority = 0;
-            
             engagedUnit = unit; 
             engagedUnit.agressor = this;
+            
+            _indexOfCurrentTargetingPriority = 0;
         }
         #endregion
 
@@ -479,24 +483,24 @@ namespace Unit
 
         public void TakeDamage(int damage)
         {
-            if (_isDead) return;
+            if (isDead) return;
          
             if (currentHealthPoint - damage > 0)
             {
                 currentHealthPoint -= damage;
                 lifeBarSlider.value = currentHealthPoint;
+
+                if (engagedUnit is null) Engage(agressor);
             }
             else StartCoroutine(Die());
         }
 
         private IEnumerator Die()
         {
-            _isDead = true;
+            isDead = true;
 
             currentHealthPoint = 0;
             lifeBarSlider.value = 0;
-
-            agressor.dertermineNewTarget = true;
 
             if (engagedUnit is not null)
             {
@@ -536,7 +540,6 @@ namespace Unit
             engagedUnit.agressor = null;
             engagedUnit = null;
         }
-        
         #endregion
 
         #region Selection

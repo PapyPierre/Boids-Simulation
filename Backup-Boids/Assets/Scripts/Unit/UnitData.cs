@@ -11,6 +11,7 @@ namespace Unit
         // ---------------------------------- Module d'Identité -------------------------------------------
 
         #region Module d'Identité
+        [Header("Module d'Identité")]
         public int unitId;
         //[Foldout("Module Identité")]public string unitName;
 
@@ -20,6 +21,7 @@ namespace Unit
         // ---------------------------------- Module de Déplacement ----------------------------------------
 
         #region Module de Déplacement
+        [Space, Header("Module de Déplacement")]
         public UnitType unitType;
   
         public enum UnitType
@@ -37,6 +39,7 @@ namespace Unit
         // ---------------------------------- Module de Comportement en Flock ----------------------------------------
 
         #region Module de Comportement en Flock
+        [Space, Header("Module de Comportement en Flock")]
         [Space, Tooltip("Distance de perception des autres unités")] public float unitPerceptionRadius;
         [Tooltip("Distance max entre cette unité et son ancre")] public float unitMaxDistFromAnchor;
         
@@ -49,6 +52,7 @@ namespace Unit
         // ---------------------------------- Module de Comportement en Combat ----------------------------------------
 
         #region Module de Comportement en Combat
+        [Space, Header("Module de Comportement en Combat")]
         public bool canAutoEngage;
         public int engagementDist;
         public bool canDesengage; 
@@ -78,6 +82,7 @@ namespace Unit
         // ---------------------------------- Module Ciblage ---------------------------------------------
 
         #region Module Ciblage
+        [Space, Header("Module de Ciblage")]
         [Tooltip("Si une donnée est null ou à 0, elle n'est pas pris en compte")] 
         public List<TargetingPrioOptions> targetingPriority;
 
@@ -106,6 +111,7 @@ namespace Unit
         // ---------------------------------- Module Armement ---------------------------------------------
 
         #region Module Armement
+        [Space, Header("Module d'Armement")]
         [Tooltip("Les dégats infligé par cette unité seront compris entre ces valeurs"), MinMaxSlider(0.0f, 100.0f)]
         public Vector2Int damageRange;
         

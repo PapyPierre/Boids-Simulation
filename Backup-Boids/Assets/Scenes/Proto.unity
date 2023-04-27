@@ -98,7 +98,8 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_LightingSettings: {fileID: 0}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: 3e64e648ece2ffc41880b53e81607b77,
+    type: 2}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -771,8 +772,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   flocksStateUpdateTime: 0.5
-  unitCountInNewFlock: 20
-  newFlockType: 1
+  unitCountInNewFlock: 200
+  newFlockType: 0
   newFlockFaction: 0
   defaultUnitPerceptionRadius: 3
   defaultUnitMaxDistFromAnchor: 12
@@ -794,7 +795,7 @@ MonoBehaviour:
   flockAnchorPrefab: {fileID: 7939560677676546065, guid: ab4f30f96f32dba449ae025343228e8e,
     type: 3}
   useWeights: 1
-  separationWeight: 90
+  separationWeight: 100
   cohesionWeight: 10
   alignmentWeight: 14
   anchorWeight: 6
@@ -1573,7 +1574,7 @@ MonoBehaviour:
     faction: 0
     anchor: {fileID: 0}
     flockColor: {r: 0, g: 0, b: 0, a: 0}
-    unitsInFlocks: []
+    activeUnitsInFlocks: []
   groundLayer:
     serializedVersion: 2
     m_Bits: 8

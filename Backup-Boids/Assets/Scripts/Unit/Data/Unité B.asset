@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f1061ca6b97b694984093fce602421f, type: 3}
   m_Name: "Unit\xE9 B"
   m_EditorClassIdentifier: 
-  unitId: 0
+  unitId: 1
   maxHealthPoint: 100
   unitType: 1
   normalSpeed: 8

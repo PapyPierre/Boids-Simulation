@@ -124,14 +124,16 @@ namespace Unit
 
             int unitsNearby = 0;
             
-            unitsInRangeOfEngagement.Clear();
+           // unitsInRangeOfEngagement.Clear();
             
+            Vector3 myPosition = transform.position;
+
             foreach (var unit in _flockManager.allActiveUnits)
             {
                 if (this == unit) continue;
-                
+
                 Vector3 otherUnitPosition = unit.transform.position;
-                float distToOtherUnit = Vector3.Distance(transform.position, otherUnitPosition);
+                float distToOtherUnit = Vector3.Distance(myPosition, otherUnitPosition);
                 
                 if (unit.myFlock == myFlock) // Unité de la même flock
                 {
@@ -151,13 +153,13 @@ namespace Unit
                         {
                             if (_selectionManager.currentlySelectedUnits.Contains(this))
                             {
-                                Debug.DrawLine(transform.position, unit.transform.position, myFlock.flockColor);
+                                Debug.DrawLine(myPosition, unit.transform.position, myFlock.flockColor);
                             }
                         }
-                        else Debug.DrawLine(transform.position, unit.transform.position, myFlock.flockColor);
+                        else Debug.DrawLine(myPosition, unit.transform.position, myFlock.flockColor);
                     }
                     
-                    seperationSum += -(otherUnitPosition - transform.position) * (1f / Mathf.Max(distToOtherUnit, .0001f));
+                    seperationSum += -(otherUnitPosition - myPosition) * (1f / Mathf.Max(distToOtherUnit, .0001f));
                     positionSum += otherUnitPosition;
                     headingSum += unit.transform.forward;
 
@@ -165,19 +167,16 @@ namespace Unit
                 }
                 else  // Unité d'une autre flock
                 {
-                    if (unit.myFlock.faction != myFlock.faction) // Unité ennemies
+                    if (unit.myFlock.faction == myFlock.faction) continue; 
+                    
+                    // Unité ennemies
+                    if (distToOtherUnit < data.engagementDist)
                     {
-                        if (distToOtherUnit < data.engagementDist)
-                        {
-                            if (!unitsInRangeOfEngagement.Contains(unit))
-                            {
-                                unitsInRangeOfEngagement.Add(unit);
-                            }
-                        }
-                        else
-                        {
-                            if (unitsInRangeOfEngagement.Contains(unit)) unitsInRangeOfEngagement.Remove(unit);
-                        }
+                        if (!unitsInRangeOfEngagement.Contains(unit)) unitsInRangeOfEngagement.Add(unit);
+                    }
+                    else
+                    {
+                        if (unitsInRangeOfEngagement.Contains(unit)) unitsInRangeOfEngagement.Remove(unit);
                     }
                 }
             }
@@ -185,7 +184,7 @@ namespace Unit
             if (unitsNearby > 0) 
             {
                 _separationForce = seperationSum / unitsNearby;
-                _cohesionForce   = (positionSum / unitsNearby) - transform.position;
+                _cohesionForce   = (positionSum / unitsNearby) - myPosition;
                 _alignmentForce  = headingSum / unitsNearby;
             }
             else 
@@ -194,9 +193,9 @@ namespace Unit
                 _cohesionForce   = Vector3.zero;
                 _alignmentForce  = Vector3.zero;
             }
-            
-            if (data.unitMaxDistFromAnchor == 0) GoBackToAnchor(_flockManager.defaultUnitMaxDistFromAnchor);
-            else GoBackToAnchor(data.unitMaxDistFromAnchor);
+
+            GoBackToAnchor(data.unitMaxDistFromAnchor == 0 ? 
+                _flockManager.defaultUnitMaxDistFromAnchor : data.unitMaxDistFromAnchor);
         }
 
         private void GoBackToAnchor(float maxDistFromAnchor)
@@ -223,6 +222,12 @@ namespace Unit
             }
 
             _returnToAnchorForce *= (_distToMyAnchor / (10 -_flockManager.anchorWeightMultiplicator)) + 1;
+
+            if (data.unitType is UnitData.UnitType.Aérienne)
+            {
+                if (transform.position.y < 5) _returnToAnchorForce *= 2;
+            }
+            
             isOutOfBoundOfAnchor = _distToMyAnchor > maxDistFromAnchor;
         }
         
